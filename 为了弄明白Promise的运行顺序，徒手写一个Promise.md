@@ -23,13 +23,13 @@ new Promise((resolve, reject) => {
 })
 ```
 <details>
-  <summary>运行结果<summary>
-  <pre>
-  //promise1 resolved
-  //promise2 resolved
-  //promise3 resolved
-  //promise4 resolved
-  //----2
-  //promise5 resolved
-  </pre>
-</details>
+<summary>运行结果</summary>
+<pre>
+promise1 resolved
+promise2 resolved
+promise3 resolved
+promise4 resolved
+---- 2
+promise5 resolved
+</pre>
+<details>
