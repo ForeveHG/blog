@@ -1,42 +1,3 @@
-function PromiseResolve(promise, x) {
-    //如果 promise 和 x 指向同一对象，以 TypeError 为据因拒绝执行 promise
-    if (promise == x) return promise.reject(new TypeError())
-    //x为promise，对象或者函数
-    if (x !== null && (typeof x == "object" || typeof x == "function")) {
-        let isCall = false; //标记resolvePromise或rejectPromise是否被调用
-        try {
-            let then = x.then;
-            //如果 then 是函数，将 x 作为函数的作用域 this 调用之。传递两个回调函数作为参数，第一个参数叫做 resolvePromise ，第二个参数叫做 rejectPromise:
-            if (typeof then == "function") {
-                setTimeout(function () {
-                    then.call(x, function (y) {
-                        //如果 resolvePromise 和 rejectPromise 均被调用，或者被同一参数调用了多次，则优先采用首次调用并忽略剩下的调用
-                        if (isCall) return
-                        isCall = true
-                        //如果 resolvePromise 以值 y 为参数被调用，则运行 [[Resolve]](promise, y)
-                        PromiseResolve(promise, y)
-                    }, function (r) {
-                        if (isCall) return
-                        isCall = true
-                        //如果 rejectPromise 以据因 r 为参数被调用，则以据因 r 拒绝 promise
-                        promise.reject(r)
-                    })
-                })
-            } else { //如果 then 不是函数，以 x 为参数执行 promise
-                promise.resolve(x)
-            }
-        } catch (e) {
-            // then 方法抛出了异常 e,如果 resolvePromise 或 rejectPromise 已经被调用，则忽略之
-            if (isCall) return
-            isCall = true
-            //取x.then抛出异常或者then方法抛出异常以 e 为据因拒绝 promise
-            promise.reject(e)
-        }
-    } else { //如果 x 不为对象或者函数，以 x 为参数执行 promise
-        promise.resolve(x)
-    }
-}
-
 function MyPromise(executor) {
     this.status = "pending"; //默认是pending
     this.value = null;
@@ -130,6 +91,47 @@ MyPromise.prototype.then = function (onFulfilled, onRejected) {
     return promise;
 }
 
+function PromiseResolve(promise, x) {
+    //如果 promise 和 x 指向同一对象，以 TypeError 为据因拒绝执行 promise
+    if (promise == x) return promise.reject(new TypeError())
+    //x为promise，对象或者函数
+    if (x !== null && (typeof x == "object" || typeof x == "function")) {
+        let isCall = false; //标记resolvePromise或rejectPromise是否被调用
+        try {
+            let then = x.then;
+            //如果 then 是函数，将 x 作为函数的作用域 this 调用之。传递两个回调函数作为参数，第一个参数叫做 resolvePromise ，第二个参数叫做 rejectPromise:
+            if (typeof then == "function") {
+                setTimeout(function () {
+                    then.call(x, function (y) {
+                        //如果 resolvePromise 和 rejectPromise 均被调用，或者被同一参数调用了多次，则优先采用首次调用并忽略剩下的调用
+                        if (isCall) return
+                        isCall = true
+                        //如果 resolvePromise 以值 y 为参数被调用，则运行 [[Resolve]](promise, y)
+                        PromiseResolve(promise, y)
+                    }, function (r) {
+                        if (isCall) return
+                        isCall = true
+                        //如果 rejectPromise 以据因 r 为参数被调用，则以据因 r 拒绝 promise
+                        promise.reject(r)
+                    })
+                })
+            } else { //如果 then 不是函数，以 x 为参数执行 promise
+                promise.resolve(x)
+            }
+        } catch (e) {
+            // then 方法抛出了异常 e,如果 resolvePromise 或 rejectPromise 已经被调用，则忽略之
+            if (isCall) return
+            isCall = true
+            //取x.then抛出异常或者then方法抛出异常以 e 为据因拒绝 promise
+            promise.reject(e)
+        }
+    } else { //如果 x 不为对象或者函数，以 x 为参数执行 promise
+        promise.resolve(x)
+    }
+}
+
+
+//测试
 new MyPromise((resolve, reject) => {
     resolve(2);
 }).then(() => {
